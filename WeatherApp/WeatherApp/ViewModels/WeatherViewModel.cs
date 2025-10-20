@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using WeatherApp.Commands;
+using WeatherApp.Dtos;
 using WeatherApp.Interfaces;
 using WeatherApp.Models;
 
@@ -20,6 +21,9 @@ namespace WeatherApp.ViewModels
         private string windSpeed;
         private string selectedTimeFilter;
         private readonly ILoggerService logger;
+        private int id;
+        private readonly IFavouriteRepository favouriteRepository;
+        private readonly List<FavouriteLocation> allFavouriteLocations;
 
         /// <summary>
         /// Command for getting today's weather report.
@@ -30,6 +34,16 @@ namespace WeatherApp.ViewModels
         /// Command for getting forecast weather report.
         /// </summary>
         public ICommand GetWeatherForecast { get; }
+
+        /// <summary>
+        /// Add favourite location command.
+        /// </summary>
+        public ICommand AddFavouriteCommand { get; }
+
+        /// <summary>
+        /// Delete favourite location command.
+        /// </summary>
+        public ICommand DeleteFavouriteCommand { get; }
 
         /// <summary>
         /// Command for navigate to favourite page.
@@ -57,6 +71,16 @@ namespace WeatherApp.ViewModels
         /// Control the visibility of the drop down menu.
         /// </summary>
         public bool IsFilterVisible => WeatherCards.Any();
+
+        /// <summary>
+        /// Binding to UI to show add favourite button.
+        /// </summary>
+        public bool ShowAdd => !string.IsNullOrEmpty(Area) && this.allFavouriteLocations.Where(x => x.LocationId == id).Count() == 0;
+
+        /// <summary>
+        /// Binding to UI to show delete favourite button.
+        /// </summary>
+        public bool ShowDelete => !string.IsNullOrEmpty(Area) && this.allFavouriteLocations.Any(x => x.LocationId == id);
 
         /// <summary>
         /// The location binding to the text input.
@@ -149,15 +173,23 @@ namespace WeatherApp.ViewModels
         /// <param name="weatherServices">The WeatherServices.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="favouriteCard">The favourite card passed from favourite viewmodel.</param>
+        /// <param name="favouriteRepository">The favourite repository.</param>
         public WeatherViewModel(
             IWeatherServices weatherServices, 
-            ILoggerService logger, 
-            FavouriteCard favouriteCard)
+            ILoggerService logger,
+            FavouriteCard favouriteCard,
+            IFavouriteRepository favouriteRepository)
         {
             GetWeatherCommand = new GetWeatherCommand(this, weatherServices, logger);
             GetWeatherForecast = new GetWeatherForecast(this, weatherServices, logger);
+            AddFavouriteCommand = new AddFavouriteCommand(this);
+            DeleteFavouriteCommand = new DeleteFavouriteCommand(this);
 
             this.logger = logger;
+            this.favouriteRepository = favouriteRepository;
+
+            this.allFavouriteLocations = new List<FavouriteLocation>();
+            this.allFavouriteLocations.AddRange(this.favouriteRepository.GetAllFavouriteLocations().ToArray());            
 
             if (favouriteCard is not null && favouriteCard.Coord is not null)
             {
@@ -174,6 +206,7 @@ namespace WeatherApp.ViewModels
         {
             this.ClearCollection();
 
+            id = weather.Id;
             Area = $"{weather.Name}";
             Temperature = $"{weather.WeatherDetails.Temp - 273.15:F1} °C";
             Description = $"{weather.Weather[0].Description}";
@@ -184,6 +217,8 @@ namespace WeatherApp.ViewModels
 
             this.logger.LogInfo($"Get {Area} weather info success.");
             this.logger.LogInfo($"Temperature is {Temperature}.");
+
+            this.RefreshAddAndDeleteButton();
         }
 
         /// <summary>
@@ -254,11 +289,56 @@ namespace WeatherApp.ViewModels
             }
         }
 
+        /// <summary>
+        /// Add favourite location to database.
+        /// </summary>
+        public void AddFavourite()
+        {
+            var favouriteLocation = new FavouriteLocation
+            {
+                LocationId = this.id,
+                Name = this.Area,
+                Latitude = this.Coord.Lat,
+                Longitude = this.Coord.Lon,
+            };
+
+            this.favouriteRepository.AddFavouriteLocation(favouriteLocation);
+            this.allFavouriteLocations.Add(favouriteLocation);
+
+            this.RefreshAddAndDeleteButton();
+            this.logger.LogInfo($"Add {Area} to favourite locations, location id: {this.id}, latitude: {this.Coord.Lat}, longitude: {this.Coord.Lon}");
+        }
+
+        /// <summary>
+        /// Remove favourite location to database.
+        /// </summary>
+        public void DeleteFavouriteLocation()
+        {
+            var deleteLocation = this.allFavouriteLocations.FirstOrDefault(x => x.LocationId == this.id);
+            if (deleteLocation == null)
+            {
+                this.logger.LogError($"Fail to remove favourite location, locationId: {this.id}");
+                return;
+            }
+
+            this.favouriteRepository.DeleteFavouriteLocation(deleteLocation.Id);
+            this.allFavouriteLocations.Remove(deleteLocation);
+
+            this.RefreshAddAndDeleteButton();
+            this.logger.LogInfo($"Remove {Area} from favourite locations, location id: {this.id}, latitude: {this.Coord.Lat}, longitude: {this.Coord.Lon}");
+        }
+
         private void ClearCollection()
         {
             this.WeatherCards.Clear();
             this.TimeOptions.Clear();
             OnPropertyChanged(nameof(IsFilterVisible));
+        }
+
+        private void RefreshAddAndDeleteButton()
+        {
+            OnPropertyChanged(nameof(ShowAdd));
+            OnPropertyChanged(nameof(ShowDelete));
         }
     }
 }

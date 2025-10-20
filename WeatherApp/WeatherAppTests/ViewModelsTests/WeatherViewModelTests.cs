@@ -13,12 +13,14 @@ namespace WeatherAppTests.ViewModelsTests
     {
         private IWeatherServices weatherServices;
         private ILoggerService logger;
+        private IFavouriteRepository favouriteRepository;
 
         [SetUp]
         public void Setup()
         {
             this.weatherServices = Substitute.For<IWeatherServices>();
             this.logger = Substitute.For<ILoggerService>();
+            this.favouriteRepository = Substitute.For<IFavouriteRepository>();
         }
 
         /// <summary>
@@ -28,7 +30,7 @@ namespace WeatherAppTests.ViewModelsTests
         public void ApplyFilter_FiltersCorrectly()
         {
             // Arrange
-            var vm = new WeatherViewModel(this.weatherServices, this.logger, new FavouriteCard());
+            var vm = new WeatherViewModel(this.weatherServices, this.logger, new FavouriteCard(), this.favouriteRepository);
             vm.WeatherCards = new ObservableCollection<WeatherCard>
             {
                 new WeatherCard { TimeText = "Morning" },
@@ -52,7 +54,7 @@ namespace WeatherAppTests.ViewModelsTests
         [Test]
         public void ApplyFilter_All_ShowsAllCards()
         {
-            var vm = new WeatherViewModel(this.weatherServices, this.logger, new FavouriteCard());
+            var vm = new WeatherViewModel(this.weatherServices, this.logger, new FavouriteCard(), this.favouriteRepository);
             vm.WeatherCards = new ObservableCollection<WeatherCard>
             {
                 new WeatherCard { TimeText = "Morning" },

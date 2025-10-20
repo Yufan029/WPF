@@ -28,7 +28,13 @@ namespace WeatherApp.Services
         /// </summary>
         public void Navigate(TParam param)
         {
-            this.store.CurrentViewModel = this.viewModelFactory(param);
+            var viewModel = this.viewModelFactory(param);
+            if (viewModel is FavouriteViewModel fav)
+            {
+                fav.GetAllFavouriteLocations();
+            }
+
+            this.store.CurrentViewModel = viewModel;
         }
     }
 }

@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using WeatherApp.Commands;
 using WeatherApp.Interfaces;
 using WeatherApp.Models;
+using WeatherApp.Repository;
 using WeatherApp.Services;
 using WeatherApp.Stores;
 using WeatherApp.ViewModels;
@@ -21,6 +23,9 @@ namespace WeatherApp
             // Get the service collection from dependency injection library.
             var serviceCollection = new ServiceCollection();
 
+            // Configuration DB connection info.
+            ConfigurationDbContext(serviceCollection);
+
             // Register the services into dependency injection container.
             ConfigureServices(serviceCollection);
 
@@ -32,6 +37,14 @@ namespace WeatherApp
             
             mainWindow.DataContext = serviceProvider.GetRequiredService<MainWindowViewModel>();
             mainWindow.Show();
+        }
+
+        private void ConfigurationDbContext(ServiceCollection serviceCollection)
+        {
+            serviceCollection.AddDbContext<WeatherAppDbContext>(options =>
+                options.UseSqlServer("Server=.;Database=WeatherAppDB;Integrated Security=true;TrustServerCertificate=True"));
+
+            serviceCollection.AddScoped<IFavouriteRepository, FavouriteRepository>();
         }
 
         private void ConfigureServices(ServiceCollection serviceCollection)
@@ -46,7 +59,8 @@ namespace WeatherApp
             serviceCollection.AddSingleton<FavouriteViewModel>(sp =>
             {
                 var store = sp.GetRequiredService<NavigationStore>();
-                return new FavouriteViewModel(store)
+                var favouriteRepository = sp.GetRequiredService<IFavouriteRepository>();
+                return new FavouriteViewModel(store, favouriteRepository)
                 {
                     NavigateHomeWithLocationCommand = sp.GetRequiredService<NavigateCommand<WeatherViewModel, FavouriteCard>>(),
                     NavigateHomeCommand = sp.GetRequiredService<NavigateCommand<WeatherViewModel, object>>()
@@ -78,13 +92,14 @@ namespace WeatherApp
                 var store = sp.GetRequiredService<NavigationStore>();
                 var weatherServices = sp.GetRequiredService<IWeatherServices>();
                 var logger = sp.GetRequiredService<ILoggerService>();
+                var favouriteRepository = sp.GetRequiredService<IFavouriteRepository>();
 
                 return new NavigationService<WeatherViewModel, FavouriteCard>(
                     store,
                     favouriteCard =>
                     {
                         // Create a new WeatherViewModel for this NavigationService.
-                        var vm = new WeatherViewModel(weatherServices, logger, favouriteCard);
+                        var vm = new WeatherViewModel(weatherServices, logger, favouriteCard, favouriteRepository);
 
                         // Then inject the command for navigate to FavouriteViewModel without param after creation
                         vm.NavigateFavouriteCommand = sp.GetRequiredService<NavigateCommand<FavouriteViewModel, object>>();
@@ -98,13 +113,14 @@ namespace WeatherApp
                 var store = sp.GetRequiredService<NavigationStore>();
                 var weatherServices = sp.GetRequiredService<IWeatherServices>();
                 var logger = sp.GetRequiredService<ILoggerService>();
+                var favouriteRepository = sp.GetRequiredService<IFavouriteRepository>();
 
                 return new NavigationService<WeatherViewModel, object>(
                     store,
                     _ =>
                     {
                         // Create a new WeatherViewModel for this NavigationService.
-                        var vm = new WeatherViewModel(weatherServices, logger, default);
+                        var vm = new WeatherViewModel(weatherServices, logger, default, favouriteRepository);
 
                         // Inject command for navigate to FavouriteViewModel without parameter.
                         vm.NavigateFavouriteCommand = sp.GetRequiredService<NavigateCommand<FavouriteViewModel, object>>();

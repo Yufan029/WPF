@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using WeatherApp.Interfaces;
 using WeatherApp.Models;
 using WeatherApp.Stores;
 
@@ -11,6 +12,7 @@ namespace WeatherApp.ViewModels
     public class FavouriteViewModel : ViewModelBase
     {
         private string locationFilter;
+        private readonly IFavouriteRepository favouriteRepository;
 
         public FavouriteCard FavCard { get; set; }
 
@@ -52,9 +54,42 @@ namespace WeatherApp.ViewModels
         /// Constructor for FavouriteViewModel.
         /// </summary>
         /// <param name="store">The place where store the CurrentViewModel for MainWindow binding.</param>
-        public FavouriteViewModel(NavigationStore store)
+        public FavouriteViewModel(NavigationStore store, IFavouriteRepository favouriteRepository)
         {
-            this.AddSeedData();
+            this.favouriteRepository = favouriteRepository;
+            this.GetAllFavouriteLocations();
+        }
+
+        /// <summary>
+        /// Get all favourite locations from server.
+        /// </summary>
+        public void GetAllFavouriteLocations()
+        {
+            this.ClearCollection();
+            foreach (var location in this.favouriteRepository.GetAllFavouriteLocations().ToArray())
+            {
+                var number = new Random().Next(1, 21);
+                var favCard = new FavouriteCard
+                {
+                    LocationId = location.LocationId,
+                    Location = location.Name,
+                    IconUrl = $"pack://application:,,,/Assets/{number}.png",
+                    Coord = new Coord
+                    {
+                        Lat = location.Latitude,
+                        Lon = location.Longitude,
+                    }
+                };
+
+                FavouriteLocations.Add(favCard);
+                FilteredLocations.Add(favCard);
+            }
+        }
+
+        private void ClearCollection()
+        {
+            this.FavouriteLocations.Clear();
+            this.FilteredLocations.Clear();
         }
 
         private void ApplyFilter()
@@ -103,9 +138,6 @@ namespace WeatherApp.ViewModels
             FavouriteLocations.Add(f1);
             FavouriteLocations.Add(f2);
             FavouriteLocations.Add(f3);
-            FilteredLocations.Add(f1);
-            FilteredLocations.Add(f2);
-            FilteredLocations.Add(f3);
         }
     }
 }

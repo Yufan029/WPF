@@ -52,8 +52,9 @@
                     BorderThickness="0"
                     MaxWidth="120"
                     Height="30"
-                    Margin="20, 0, 0, 0"
+                    Margin="50, 0, 0, 0"
                     Cursor="Hand"
+                    HorizontalAlignment="Right"
                     Command="{Binding NavigateFavouriteCommand}">
                 <Image Source="/Assets/heart.png" Stretch="Uniform" />
             </Button>
@@ -115,14 +116,47 @@
             <Grid Grid.Column="1">
                 <StackPanel Orientation="Horizontal">
                     <Image Width="150" Height="150" Source="{Binding IconUrl}"/>
-                    <Button 
-                        Content="Forecast" 
-                        Width="80" 
-                        Height="25" 
-                        Cursor="Hand"
-                        Margin="20, 0, 0, 0" 
-                        Command="{Binding GetWeatherForecast}"
-                        Visibility="{Binding Area, Converter={StaticResource StringToVisibility}}"/>
+                    <Grid VerticalAlignment="Center">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <Button
+                            Grid.Row="0"
+                            Width="30"
+                            Height="30"
+                            Cursor="Hand"
+                            Margin="20 0 0 10"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding AddFavouriteCommand}"
+                            Visibility="{Binding ShowAdd, Converter={StaticResource BoolToVisibility}}">
+                            <Image Source="/Assets/heart-empty.png" Stretch="Uniform" />
+                        </Button>
+                        <Button
+                            Grid.Row="0"
+                            Width="30"
+                            Height="30"
+                            Cursor="Hand"
+                            Margin="20 0 0 10"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding DeleteFavouriteCommand}"
+                            Visibility="{Binding ShowDelete, Converter={StaticResource BoolToVisibility}}">
+                            <Image Source="/Assets/heart.png" Stretch="Uniform" />
+                        </Button>
+                        <Button 
+                            Grid.Row="1"
+                            Content="Forecast" 
+                            Width="80" 
+                            Height="25" 
+                            Cursor="Hand"
+                            Margin="20, 0, 0, 0" 
+                            Command="{Binding GetWeatherForecast}"
+                            Visibility="{Binding Area, Converter={StaticResource StringToVisibility}}"/>
+                    </Grid>
                 </StackPanel>
             </Grid>
         </Grid>

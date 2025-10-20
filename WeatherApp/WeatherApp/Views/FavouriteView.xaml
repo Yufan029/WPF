@@ -10,7 +10,7 @@
         <DropShadowEffect x:Key="CardShadow" BlurRadius="8" ShadowDepth="2" Opacity="0.3"/>
     </UserControl.Resources>
     
-    <Grid Margin="30">
+    <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
@@ -66,7 +66,7 @@
                             CommandParameter="{Binding}">
 
                             <Button.Background>
-                                <ImageBrush ImageSource="{Binding IconUrl}" Stretch="Uniform" Opacity="0.2" />
+                                <ImageBrush ImageSource="{Binding IconUrl}" Stretch="Uniform" Opacity="0.4" />
                             </Button.Background>
                             
                             <Border Margin="10"

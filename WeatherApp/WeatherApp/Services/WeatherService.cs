@@ -13,7 +13,7 @@ namespace WeatherApp.Services
     public class WeatherService : IWeatherServices
     {
         private readonly HttpClient _httpClient = new HttpClient();
-        private const string ApiKey = "API-KEY";
+        private const string ApiKey = "OpenWeather-API-KEY";
 
         /// <summary>
         /// The weather results async.
