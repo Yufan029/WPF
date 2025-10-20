@@ -1,0 +1,180 @@
+﻿<UserControl x:Class="WeatherApp.Views.WeatherView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WeatherApp.Views" 
+             xmlns:converters="clr-namespace:WeatherApp.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    
+    <UserControl.Resources>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibility" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="8" ShadowDepth="2" Opacity="0.3"/>
+    </UserControl.Resources>
+    
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Content="Location:" FontSize="16"/>
+            <TextBox Grid.Column="1"
+                     Text="{Binding Location, UpdateSourceTrigger=PropertyChanged}"
+                     Width="300"
+                     Height="30"
+                     FontSize="16"
+                     Padding="2 3 0 0"/>
+
+            <Button Grid.Column="2"
+                    Content="Get Weather"                
+                    Margin="20, 0, 0, 0"
+                    Width="120"
+                    Height="30"
+                    IsDefault="True"
+                    Cursor="Hand"
+                    Command="{Binding GetWeatherCommand}" />
+
+            <Button Grid.Column="3"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    BorderThickness="0"
+                    MaxWidth="120"
+                    Height="30"
+                    Margin="20, 0, 0, 0"
+                    Cursor="Hand"
+                    Command="{Binding NavigateFavouriteCommand}">
+                <Image Source="/Assets/heart.png" Stretch="Uniform" />
+            </Button>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <StackPanel Margin="0, 40, 0, 0" Orientation="Horizontal">
+                    <Grid Margin="0 10 0 10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" FontSize="12" Text="Area:" Visibility="{Binding Area, Converter={StaticResource StringToVisibility}}" />
+                        <TextBlock Grid.Row="1" FontSize="18" Text="{Binding Area}" Margin="5 0 0 0" />
+                    </Grid>
+
+                    <Grid Margin="10 10 10 10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" FontSize="12" Text="Temperature:" Visibility="{Binding Temperature, Converter={StaticResource StringToVisibility}}" />
+                        <TextBlock Grid.Row="1" FontSize="18" Text="{Binding Temperature}" Margin="15 0 0 0" />
+                    </Grid>
+
+                    <Grid Margin="10 10 10 10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" FontSize="12" Text="Humidity:" Visibility="{Binding Humidity, Converter={StaticResource StringToVisibility}}" />
+                        <TextBlock Grid.Row="1" FontSize="18" Text="{Binding Humidity}" Margin="15 0 0 0" />
+                    </Grid>
+
+                    <Grid Margin="10 10 10 10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" FontSize="12" Text="Wind Speed:" Visibility="{Binding WindSpeed, Converter={StaticResource StringToVisibility}}" />
+                        <TextBlock Grid.Row="1" FontSize="18" Text="{Binding WindSpeed}" Margin="15 0 0 0" />
+                    </Grid>
+
+                    <Grid Margin="10 10 10 10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" FontSize="12" Text="Description:" Visibility="{Binding Description, Converter={StaticResource StringToVisibility}}" />
+                        <TextBlock Grid.Row="1" FontSize="18" Text="{Binding Description}" Margin="15 0 0 0" />
+                    </Grid>
+                </StackPanel>
+            </Grid>
+            <Grid Grid.Column="1">
+                <StackPanel Orientation="Horizontal">
+                    <Image Width="150" Height="150" Source="{Binding IconUrl}"/>
+                    <Button 
+                        Content="Forecast" 
+                        Width="80" 
+                        Height="25" 
+                        Cursor="Hand"
+                        Margin="20, 0, 0, 0" 
+                        Command="{Binding GetWeatherForecast}"
+                        Visibility="{Binding Area, Converter={StaticResource StringToVisibility}}"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <ComboBox
+                Grid.Row="0"
+                Width="150"
+                Margin="10 -20 10 10"
+                HorizontalAlignment="Left"
+                ItemsSource="{Binding TimeOptions}"
+                SelectedItem="{Binding SelectedTimeFilter, Mode=TwoWay}" 
+                Visibility="{Binding IsFilterVisible, Converter={StaticResource BoolToVisibility}}"/>
+
+            <ScrollViewer 
+                Grid.Row="1"
+                VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding FilteredWeatherCards}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="10"
+                                    Padding="10"
+                                    CornerRadius="10"
+                                    BorderBrush="#ccc"
+                                    BorderThickness="1"
+                                    Background="White"
+                                    Width="200"
+                                    Height="120"
+                                    Effect="{StaticResource CardShadow}">
+                                <StackPanel Orientation="Horizontal">
+                                    <StackPanel VerticalAlignment="Bottom">
+                                        <TextBlock Text="{Binding Temperature}" FontWeight="Bold" FontSize="11" />
+                                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="12" />
+                                        <TextBlock Text="{Binding TimeText}"  FontSize="11"/>
+                                    </StackPanel>
+                                    <Image Width="80" Height="80" Source="{Binding IconUrl}" VerticalAlignment="Top"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>
