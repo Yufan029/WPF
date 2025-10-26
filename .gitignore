@@ -8,6 +8,7 @@
 **/.vs/
 **/bin/
 **/wwwroot/
+**/*.dll
 
 # User-specific files
 *.rsuser
