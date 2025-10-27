@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using Microsoft.Extensions.Options;
+using System.Globalization;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -13,7 +14,15 @@ namespace WeatherApp.Services
     public class WeatherService : IWeatherServices
     {
         private readonly HttpClient _httpClient = new HttpClient();
-        private const string ApiKey = "OpenWeather-API-KEY";
+        private readonly IOptionsSnapshot<OpenWeatherApiKey> optConfig;
+
+        private string apiKey;
+
+        public WeatherService(IOptionsSnapshot<OpenWeatherApiKey> optConfig)
+        {
+            this.optConfig = optConfig;
+            this.apiKey = this.optConfig.Value.ApiKey;
+        }
 
         /// <summary>
         /// The weather results async.
@@ -30,12 +39,12 @@ namespace WeatherApp.Services
                 var lonValid = double.TryParse(latlon[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double lon);
                 if (latValid && lonValid)
                 {
-                    url = $"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={ApiKey}";
+                    url = $"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={this.apiKey}";
                 }
             }
             else
             {
-                url = $"https://api.openweathermap.org/data/2.5/weather?q={location}&appid={ApiKey}";
+                url = $"https://api.openweathermap.org/data/2.5/weather?q={location}&appid={this.apiKey}";
             }
 
             return await GetWeatherInfoAsync(url);
@@ -49,7 +58,7 @@ namespace WeatherApp.Services
         /// <returns>The weather forecast results.</returns>
         public async Task<WeatherForecastResponse> GetWeatherForecastAsync(double lat, double lon)
         {
-            var url = $"https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={ApiKey}";
+            var url = $"https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={this.apiKey}";
 
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)

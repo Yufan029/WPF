@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using WeatherApp.Commands;
@@ -23,6 +25,8 @@ namespace WeatherApp
             // Get the service collection from dependency injection library.
             var serviceCollection = new ServiceCollection();
 
+            SetUpApiKey(serviceCollection);
+
             // Configuration DB connection info.
             ConfigurationDbContext(serviceCollection);
 
@@ -37,6 +41,15 @@ namespace WeatherApp
             
             mainWindow.DataContext = serviceProvider.GetRequiredService<MainWindowViewModel>();
             mainWindow.Show();
+        }
+
+        private void SetUpApiKey(ServiceCollection serviceCollection)
+        {
+            ConfigurationBuilder builder = new ConfigurationBuilder();
+            builder.AddUserSecrets<App>();
+
+            var configRoot = builder.Build();
+            serviceCollection.AddOptions().Configure<OpenWeatherApiKey>(apiKey => configRoot.Bind(apiKey));
         }
 
         private void ConfigurationDbContext(ServiceCollection serviceCollection)
